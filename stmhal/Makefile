@@ -8,6 +8,7 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+
 include ../py/mkenv.mk
 -include mpconfigport.mk
 include boards/$(BOARD)/mpconfigboard.mk
@@ -213,6 +214,16 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_data.c \
 	)
 
+# for uGFX driver module
+ifeq ($(MICROPY_PY_UGFX),1)
+GFXLIB=../../ugfx
+include $(GFXLIB)/gfx.mk
+include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
+INC += $(foreach d, $(GFXINC), -I$d)
+SRC_C += ugfx.c
+SRC_UGFX += $(GFXSRC)
+endif
+	
 ifeq ($(MICROPY_PY_WIZNET5K),1)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
@@ -277,6 +288,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_UGFX:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 # We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
