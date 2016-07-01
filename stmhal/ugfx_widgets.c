@@ -269,7 +269,7 @@ STATIC mp_obj_t ugfx_list_detach_input(mp_obj_t self_in, mp_obj_t function) {
     ugfx_list_obj_t *self = self_in;
     int fun = mp_obj_get_int(function);	
 	
-	gwinDetachToggle(self->ghList,fun);
+	//gwinDetachToggle(self->ghList,fun);
 	
     return mp_const_none;
 }
