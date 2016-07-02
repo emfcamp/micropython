@@ -523,8 +523,8 @@ STATIC mp_obj_t ugfx_keyboard_selected_key(mp_obj_t self_in) {
     ugfx_keyboard_obj_t *self = self_in;
 	const char utf8_str[9];	
 	uint8_t len = gwinKeyboardGetSelected(self->ghKeyboard, (uint8_t*)utf8_str);
-	utf8_str[len] = 0;	
-    return mp_obj_new_str(utf8_str, len, True);
+//	utf8_str[len] = 0;	
+    return mp_obj_new_str(utf8_str, len, TRUE);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_keyboard_selected_key_obj, ugfx_keyboard_selected_key);
 
