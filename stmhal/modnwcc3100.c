@@ -305,7 +305,10 @@ STATIC int cc3100_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, u
 
 
 // Additional interface functions
-// method connect(ssid, key=None, *, security=WPA2, bssid=None, timeout=90)
+// method connect(ssid, key=None, *, security=WPA2, bssid=None, timeout=90, user=None)
+// for OPEN connect("ssid")
+// for PSK connect("ssid", "presharedkey")
+// for ENT connect("ssid", "password", user="username")
 STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -313,6 +316,7 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SL_SEC_TYPE_WPA_WPA2} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(90) } },
+        { MP_QSTR_user, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -343,6 +347,26 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
       timeout = mp_obj_get_int(args[4].u_obj) * 1000;
     }
 
+    // get user
+    mp_uint_t user_len = 0;
+    const char *user = NULL;
+    SlSecParamsExt_t sec_params_ext;
+    SlSecParamsExt_t *sec_params_ext_ptr = NULL;
+    if (args[5].u_obj != mp_const_none) {
+        user = mp_obj_str_get_data(args[5].u_obj, &user_len);
+        sec = SL_SEC_TYPE_WPA_ENT; // override security type
+
+        sec_params_ext_ptr = &sec_params_ext;
+        sec_params_ext.User = (int8_t*)user;
+        sec_params_ext.UserLen = user_len;
+        sec_params_ext.AnonUserLen = 0;
+        sec_params_ext.EapMethod = SL_ENT_EAP_METHOD_PEAP1_MSCHAPv2;
+
+        // 0 - Disable the server authnetication | 1 - Enable (this is the deafult)
+        uint8_t serverAuth = 1;
+        sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, 19, 1, (uint8_t *)&serverAuth);
+    }
+
     SlSecParams_t sec_params;
     sec_params.Type = sec;
     sec_params.Key = (int8_t*)key;
@@ -350,7 +374,7 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // connect to AP
     printf("Connect to AP\n");
-    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, NULL)!= 0) {
+    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, sec_params_ext_ptr)!= 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
           "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
     }
