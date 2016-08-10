@@ -225,25 +225,39 @@ ugfx.text(5, 5, "Downloading TiLDA software", ugfx.BLACK)
 label = ugfx.Label(5, 30, ugfx.width() - 10, ugfx.height() - 60, "Please wait")
 ugfx.Label(5, ugfx.height() - 30, ugfx.width() - 10, 30, "If nothing happens for 2 minutes please press the reset button on the back")
 
-w = {}
+config = {}
 try:
 	if "wifi.json" in os.listdir():
 		with open("wifi.json") as f:
-			w = json.loads(f.read())
+			config = json.loads(f.read())
 except ValueError as e:
 	print(e)
 
+if type(config) is dict: config = [config]
+
 wifi_info = "\nMore information:\nbadge.emfcamp.org/TiLDA_MK3/wifi"
-if "ssid" not in w:
+if not all( [ ("ssid" in n) for n in config ] ):
 	label.text("Couldn't find a valid wifi.json :(" + wifi_info)
 	while True: pyb.wfi()
 
-label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s" % (w["ssid"], wifi_info))
+exc = None
+retries = 6
+connected = False
 n = network.CC3100()
-if ("pw" in w) and w["pw"]:
-	n.connect(w["ssid"], w["pw"], timeout=10)
-else:
-	n.connect(w["ssid"], timeout=10)
+while (retries > 0) and (not connected):
+	for w in config:
+		label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s\nTries left: %d" % (w["ssid"], wifi_info,retries))
+		try:
+			if ("pw" in w) and w["pw"]:
+				n.connect(w["ssid"], w["pw"], timeout=10)
+			else:
+				n.connect(w["ssid"], timeout=10)
+		except Exception as e:
+			exc = e
+		connected = n.is_connected()
+		if connected: break
+	retries -= 1
+if (not connected) and (exc is not None): raise( exc )
 
 success = False
 failure_counter = 0
