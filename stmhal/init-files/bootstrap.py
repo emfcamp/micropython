@@ -225,39 +225,39 @@ ugfx.text(5, 5, "Downloading TiLDA software", ugfx.BLACK)
 label = ugfx.Label(5, 30, ugfx.width() - 10, ugfx.height() - 60, "Please wait")
 ugfx.Label(5, ugfx.height() - 30, ugfx.width() - 10, 30, "If nothing happens for 2 minutes please press the reset button on the back")
 
-config = {}
+w = {}
 try:
 	if "wifi.json" in os.listdir():
 		with open("wifi.json") as f:
-			config = json.loads(f.read())
+			w = json.loads(f.read())
 except ValueError as e:
 	print(e)
 
-if type(config) is dict: config = [config]
+if type(w) is dict:
+	# convert original format json (dict, one network) to new (list, many networks)
+	w = [w]
 
 wifi_info = "\nMore information:\nbadge.emfcamp.org/TiLDA_MK3/wifi"
-if not all( [ ("ssid" in n) for n in config ] ):
+if not all( [ ("ssid" in config) for config in w ] ):
 	label.text("Couldn't find a valid wifi.json :(" + wifi_info)
 	while True: pyb.wfi()
 
-exc = None
-retries = 6
-connected = False
 n = network.CC3100()
-while (retries > 0) and (not connected):
-	for w in config:
-		label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s\nTries left: %d" % (w["ssid"], wifi_info,retries))
-		try:
-			if ("pw" in w) and w["pw"]:
-				n.connect(w["ssid"], w["pw"], timeout=10)
-			else:
-				n.connect(w["ssid"], timeout=10)
-		except Exception as e:
-			exc = e
-		connected = n.is_connected()
-		if connected: break
-	retries -= 1
-if (not connected) and (exc is not None): raise( exc )
+visible_ssids = [ ap['ssid'] for ap in n.list_aps() ]
+known_ssids = [ ap['ssid'] for ap in w ]
+
+if len(set(known_ssids).intersection(visible_ssids)) < 1:
+	label.text("Couldn't find any networks listed in wifi.json :(" + wifi_info)
+	while True: pyb.wfi()	
+
+for ap in w:
+	if ap["ssid"] in visible_ssids:
+		label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s" % (ap["ssid"], wifi_info))
+		if ("pw" in ap) and ap["pw"]:
+			n.connect(ap["ssid"], ap["pw"], timeout=10)
+		else:
+			n.connect(ap["ssid"], timeout=10)
+		break # found a visible AP, don't bother with any more
 
 success = False
 failure_counter = 0
