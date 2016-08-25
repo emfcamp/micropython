@@ -233,17 +233,31 @@ try:
 except ValueError as e:
 	print(e)
 
+if type(w) is dict:
+	# convert original format json (dict, one network) to new (list, many networks)
+	w = [w]
+
 wifi_info = "\nMore information:\nbadge.emfcamp.org/TiLDA_MK3/wifi"
-if "ssid" not in w:
+if not all( [ ("ssid" in config) for config in w ] ):
 	label.text("Couldn't find a valid wifi.json :(" + wifi_info)
 	while True: pyb.wfi()
 
-label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s" % (w["ssid"], wifi_info))
 n = network.CC3100()
-if ("pw" in w) and w["pw"]:
-	n.connect(w["ssid"], w["pw"], timeout=10)
-else:
-	n.connect(w["ssid"], timeout=10)
+visible_ssids = [ ap['ssid'] for ap in n.list_aps() ]
+known_ssids = [ ap['ssid'] for ap in w ]
+
+if len(set(known_ssids).intersection(visible_ssids)) < 1:
+	label.text("Couldn't find any networks listed in wifi.json :(" + wifi_info)
+	while True: pyb.wfi()	
+
+for ap in w:
+	if ap["ssid"] in visible_ssids:
+		label.text("Connecting to '%s'.\nIf this is incorrect, please check your wifi.json%s" % (ap["ssid"], wifi_info))
+		if ("pw" in ap) and ap["pw"]:
+			n.connect(ap["ssid"], ap["pw"], timeout=10)
+		else:
+			n.connect(ap["ssid"], timeout=10)
+		break # found a visible AP, don't bother with any more
 
 success = False
 failure_counter = 0
