@@ -318,7 +318,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 			}
 			else //if rotation == 270
 			{
-				buffer += srcy*srccx+srcx+cy;
+				buffer += srcy*srccx+srcx+cy-1;
 		        srccx += cx;
 		        for (y = 0; y < cy; y++){
 		            for (x = 0; x < cx; x++){
