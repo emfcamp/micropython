@@ -138,8 +138,6 @@ static const char fresh_bootstrap_py[] =
 #include "genhdr/bootstrap.py.h"
 ;
 
-static const char fresh_wifi_json[] = "{\"ssid\":\"emfcamp-insecure\"}\r\n";
-
 static const char fresh_pybcdc_inf[] =
 #include "genhdr/pybcdc_inf.h"
 ;
@@ -200,11 +198,6 @@ void init_flash_fs(uint reset_mode) {
         UINT n;
         f_write(&fp, fresh_bootstrap_py, sizeof(fresh_bootstrap_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
-        f_close(&fp);
-
-        // create wifi.json
-        f_open(&fp, "/flash/wifi.json", FA_WRITE | FA_CREATE_ALWAYS);
-        f_write(&fp, fresh_wifi_json, sizeof(fresh_wifi_json) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
         // create .inf driver file
