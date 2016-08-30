@@ -68,7 +68,7 @@
 ///     tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
 ///     tim.callback(None)              # clear callback
 ///
-/// *Note:* Timer 3 is used for fading the blue LED.  Timer 5 controls
+/// *Note:* Timer 3 is used for fading the blue LED.  Timer 2 controls
 /// the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
 /// It is recommended to use the other timers in your programs.
 
@@ -78,7 +78,7 @@
 // TIM3:
 //  - LED 4, PWM to set the LED intensity
 //
-// TIM5:
+// TIM2:
 //  - servo controller, PWM
 //
 // TIM6:
@@ -142,7 +142,7 @@ typedef struct _pyb_timer_obj_t {
 #define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0xffffffff : 0xffff)
 #define TIMER_CHANNEL(self)     ((((self)->channel) - 1) << 2)
 
-TIM_HandleTypeDef TIM5_Handle;
+TIM_HandleTypeDef TIM2_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
@@ -167,24 +167,24 @@ void timer_deinit(void) {
     }
 }
 
-// TIM5 is set-up for the servo controller
+// TIM2 is set-up for the servo controller
 // This function inits but does not start the timer
-void timer_tim5_init(void) {
-    // TIM5 clock enable
-    __TIM5_CLK_ENABLE();
+void timer_tim2_init(void) {
+    // TIM2 clock enable
+    __TIM2_CLK_ENABLE();
 
     // set up and enable interrupt
-    HAL_NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5, IRQ_SUBPRI_TIM5);
-    HAL_NVIC_EnableIRQ(TIM5_IRQn);
+    HAL_NVIC_SetPriority(TIM2_IRQn, IRQ_PRI_TIM2, IRQ_SUBPRI_TIM2);
+    HAL_NVIC_EnableIRQ(TIM2_IRQn);
 
     // PWM clock configuration
-    TIM5_Handle.Instance = TIM5;
-    TIM5_Handle.Init.Period = 2000 - 1; // timer cycles at 50Hz
-    TIM5_Handle.Init.Prescaler = (timer_get_source_freq(5) / 100000) - 1; // timer runs at 100kHz
-    TIM5_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    TIM5_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    TIM2_Handle.Instance = TIM2;
+    TIM2_Handle.Init.Period = 2000 - 1; // timer cycles at 50Hz
+    TIM2_Handle.Init.Prescaler = (timer_get_source_freq(2) / 100000) - 1; // timer runs at 100kHz
+    TIM2_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    TIM2_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
 
-    HAL_TIM_PWM_Init(&TIM5_Handle);
+    HAL_TIM_PWM_Init(&TIM2_Handle);
 }
 
 #if defined(TIM6)
@@ -218,7 +218,7 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    if (htim == &TIM5_Handle) {
+    if (htim == &TIM2_Handle) {
         servo_timer_irq_callback();
     }
 }
