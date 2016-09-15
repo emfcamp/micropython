@@ -404,10 +404,23 @@ USB_IDS_FILE = usb.h
 CDCINF_TEMPLATE = pybcdc.inf_template
 BOOT_PY_SOURCE = init-files/boot.py
 BOOTSTRAP_PY_SOURCE = init-files/bootstrap.py
+
+BUTTONS_PY_SOURCE = init-files/lib/buttons.py
+DIALOGS_PY_SOURCE = init-files/lib/dialogs.py
+HTTP_CLIENT_PY_SOURCE = init-files/lib/http_client.py
+ONBOARD_PY_SOURCE = init-files/lib/onboard.py
+WIFI_PY_SOURCE = init-files/lib/wifi.py
+
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 GEN_BOOT_PY_HEADER = $(HEADER_BUILD)/boot.py.h
 GEN_BOOTSTRAP_PY_HEADER = $(HEADER_BUILD)/bootstrap.py.h
+
+GEN_BUTTONS_PY_HEADER = $(HEADER_BUILD)/buttons.py.h
+GEN_DIALOGS_PY_HEADER = $(HEADER_BUILD)/dialogs.py.h
+GEN_HTTP_CLIENT_PY_HEADER = $(HEADER_BUILD)/http_client.py.h
+GEN_ONBOARD_PY_HEADER = $(HEADER_BUILD)/onboard.py.h
+GEN_WIFI_PY_HEADER = $(HEADER_BUILD)/wifi.py.h
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
@@ -416,6 +429,11 @@ SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
 SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
 SRC_QSTR_AUTO_DEPS += $(GEN_BOOT_PY_HEADER)
 SRC_QSTR_AUTO_DEPS += $(GEN_BOOTSTRAP_PY_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_BUTTONS_PY_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_DIALOGS_PY_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_HTTP_CLIENT_PY_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_ONBOARD_PY_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_WIFI_PY_HEADER)
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -429,7 +447,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
-main.c: $(GEN_CDCINF_HEADER) $(GEN_BOOT_PY_HEADER) $(GEN_BOOTSTRAP_PY_HEADER)
+main.c: $(GEN_CDCINF_HEADER) $(GEN_BOOT_PY_HEADER) $(GEN_BOOTSTRAP_PY_HEADER) $(GEN_BUTTONS_PY_HEADER) $(GEN_DIALOGS_PY_HEADER) $(GEN_HTTP_CLIENT_PY_HEADER) $(GEN_ONBOARD_PY_HEADER) $(GEN_WIFI_PY_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
@@ -467,6 +485,26 @@ $(GEN_BOOT_PY_HEADER): $(BOOT_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
 
 $(GEN_BOOTSTRAP_PY_HEADER): $(BOOTSTRAP_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "Convert bootstrap.py"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_BUTTONS_PY_HEADER): $(BUTTONS_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
+	$(ECHO) "Convert buttons.py"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_DIALOGS_PY_HEADER): $(DIALOGS_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
+	$(ECHO) "Convert dialogs.py"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_HTTP_CLIENT_PY_HEADER): $(HTTP_CLIENT_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
+	$(ECHO) "Convert http_client.py"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_ONBOARD_PY_HEADER): $(ONBOARD_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
+	$(ECHO) "Convert onboard.py"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_WIFI_PY_HEADER): $(WIFI_PY_SOURCE) $(FILE2H) | $(HEADER_BUILD)
+	$(ECHO) "Convert wifi.py"
 	$(Q)$(PYTHON) $(FILE2H) $< > $@
 
 include ../py/mkrules.mk

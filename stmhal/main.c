@@ -138,7 +138,25 @@ static const char fresh_bootstrap_py[] =
 #include "genhdr/bootstrap.py.h"
 ;
 
-static const char fresh_wifi_json[] = "{\"ssid\":\"emfcamp-insecure\"}\r\n";
+static const char fresh_buttons_py[] =
+#include "genhdr/buttons.py.h"
+;
+
+static const char fresh_dialogs_py[] =
+#include "genhdr/dialogs.py.h"
+;
+
+static const char fresh_http_client_py[] =
+#include "genhdr/http_client.py.h"
+;
+
+static const char fresh_onboard_py[] =
+#include "genhdr/onboard.py.h"
+;
+
+static const char fresh_wifi_py[] =
+#include "genhdr/wifi.py.h"
+;
 
 static const char fresh_pybcdc_inf[] =
 #include "genhdr/pybcdc_inf.h"
@@ -202,9 +220,22 @@ void init_flash_fs(uint reset_mode) {
         // TODO check we could write n bytes
         f_close(&fp);
 
-        // create wifi.json
-        f_open(&fp, "/flash/wifi.json", FA_WRITE | FA_CREATE_ALWAYS);
-        f_write(&fp, fresh_wifi_json, sizeof(fresh_wifi_json) - 1 /* don't count null terminator */, &n);
+        // create support libs
+        f_mkdir("/flash/lib");
+        f_open(&fp, "/flash/lib/buttons.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_buttons_py, sizeof(fresh_buttons_py) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+        f_open(&fp, "/flash/lib/dialogs.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_dialogs_py, sizeof(fresh_dialogs_py) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+        f_open(&fp, "/flash/lib/http_client.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_http_client_py, sizeof(fresh_http_client_py) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+        f_open(&fp, "/flash/lib/onboard.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_onboard_py, sizeof(fresh_onboard_py) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+        f_open(&fp, "/flash/lib/wifi.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_wifi_py, sizeof(fresh_wifi_py) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
         // create .inf driver file
