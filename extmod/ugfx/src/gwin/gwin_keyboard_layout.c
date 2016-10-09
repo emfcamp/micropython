@@ -39,7 +39,7 @@
 	static const char *Eng1Set1[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\002ZXCVBNM\006\006",	Eng1Set0Row3,		0 };
 	static const char *Eng1Set2[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\003ZXCVBNM\006\006",	Eng1Set0Row3,		0 };
 	static const char *Eng1Set3[] = { "+-*/",		"@789",			"\007456",		"\010123",			"\01100.",	0 };
-	static const char *Eng1Set4[] = { "#$%^&*()",	"~`:;\"'{}",	"<>?/\\|[]",	"\011\004,!  .@",	0 };
+	static const char *Eng1Set4[] = { "#$%^&*()",	"~`:;\"'{}",	"<>?/\\|[]",	"\011\004,!_ .@",	0 };
 	static const GVKeySet Eng1Sets[] = { Eng1Set0, Eng1Set1, Eng1Set2, Eng1Set3, Eng1Set4, 0 };
 	const GVKeyTable VirtualKeyboard_English1 = { Eng1SKeys, Eng1Sets };
 
