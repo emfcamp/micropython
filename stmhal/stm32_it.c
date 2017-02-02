@@ -559,6 +559,7 @@ void TIM1_TRG_COM_TIM17_IRQHandler(void) {
 void TIM2_IRQHandler(void) {
     IRQ_ENTER(TIM2_IRQn);
     timer_irq_handler(2);
+    HAL_TIM_IRQHandler(&TIM2_Handle);
     IRQ_EXIT(TIM2_IRQn);
 }
 
@@ -577,7 +578,6 @@ void TIM4_IRQHandler(void) {
 void TIM5_IRQHandler(void) {
     IRQ_ENTER(TIM5_IRQn);
     timer_irq_handler(5);
-    HAL_TIM_IRQHandler(&TIM5_Handle);
     IRQ_EXIT(TIM5_IRQn);
 }
 

@@ -126,11 +126,11 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_irq_stats_obj);
 #define IRQ_PRI_OTG_HS          6
 #define IRQ_SUBPRI_OTG_HS                   0
 
+#define IRQ_PRI_TIM2            6
+#define IRQ_SUBPRI_TIM2                     0
+
 #define IRQ_PRI_TIM3            6
 #define IRQ_SUBPRI_TIM3                     0
-
-#define IRQ_PRI_TIM5            6
-#define IRQ_SUBPRI_TIM5                     0
 
 #define IRQ_PRI_CAN             7
 #define IRQ_SUBPRI_CAN                      0

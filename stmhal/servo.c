@@ -38,10 +38,10 @@
 ///
 /// Servo controls standard hobby servos with 3-wires (ground, power, signal).
 
-// this servo driver uses hardware PWM to drive servos on PA0, PA1, PA2, PA3 = X1, X2, X3, X4
-// TIM2 and TIM5 have CH1, CH2, CH3, CH4 on PA0-PA3 respectively
-// they are both 32-bit counters with 16-bit prescaler
-// we use TIM5
+// this servo driver uses hardware PWM to drive servos on PA0, PA1, PA2, PB11 = X1, X2, X3, X4
+// TIM2 has CH1, CH2, CH3, CH4 on PA0, PA1, PA2, PB11 respectively
+// it is a 32-bit counters with 16-bit prescaler
+// Note: the use of TIM2 is specific to Tilda, the pyboard used TIM5
 
 #define PYB_SERVO_NUM (4)
 
@@ -62,7 +62,7 @@ typedef struct _pyb_servo_obj_t {
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
 void servo_init(void) {
-    timer_tim5_init();
+    timer_tim2_init();
 
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
@@ -103,17 +103,17 @@ void servo_timer_irq_callback(void) {
             }
             // set the pulse width
             switch (s->servo_id) {
-                case 1: TIM5->CCR1 = s->pulse_cur; break;
-                case 2: TIM5->CCR2 = s->pulse_cur; break;
-                case 3: TIM5->CCR3 = s->pulse_cur; break;
-                case 4: TIM5->CCR4 = s->pulse_cur; break;
+                case 1: TIM2->CCR1 = s->pulse_cur; break;
+                case 2: TIM2->CCR2 = s->pulse_cur; break;
+                case 3: TIM2->CCR3 = s->pulse_cur; break;
+                case 4: TIM2->CCR4 = s->pulse_cur; break;
             }
         }
     }
     if (need_it) {
-        __HAL_TIM_ENABLE_IT(&TIM5_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_ENABLE_IT(&TIM2_Handle, TIM_IT_UPDATE);
     } else {
-        __HAL_TIM_DISABLE_IT(&TIM5_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_DISABLE_IT(&TIM2_Handle, TIM_IT_UPDATE);
     }
 }
 
@@ -124,7 +124,7 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
         case 1: pin = GPIO_PIN_0; channel = TIM_CHANNEL_1; break;
         case 2: pin = GPIO_PIN_1; channel = TIM_CHANNEL_2; break;
         case 3: pin = GPIO_PIN_2; channel = TIM_CHANNEL_3; break;
-        case 4: pin = GPIO_PIN_3; channel = TIM_CHANNEL_4; break;
+        case 4: pin = GPIO_PIN_11; channel = TIM_CHANNEL_4; break;
         default: return;
     }
 
@@ -134,8 +134,12 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Alternate = GPIO_AF2_TIM5;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.Alternate = GPIO_AF1_TIM2;
+    if (s->servo_id == 4) {
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+    } else {
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+    }
 
     // PWM mode configuration
     TIM_OC_InitTypeDef oc_init;
@@ -143,10 +147,10 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     oc_init.Pulse = s->pulse_cur; // units of 10us
     oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
     oc_init.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&TIM5_Handle, &oc_init, channel);
+    HAL_TIM_PWM_ConfigChannel(&TIM2_Handle, &oc_init, channel);
 
     // start PWM
-    HAL_TIM_PWM_Start(&TIM5_Handle, channel);
+    HAL_TIM_PWM_Start(&TIM2_Handle, channel);
 }
 
 /******************************************************************************/
@@ -158,10 +162,10 @@ STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     if (v < 50) { v = 50; }
     if (v > 250) { v = 250; }
     switch (p) {
-        case 1: TIM5->CCR1 = v; break;
-        case 2: TIM5->CCR2 = v; break;
-        case 3: TIM5->CCR3 = v; break;
-        case 4: TIM5->CCR4 = v; break;
+        case 1: TIM2->CCR1 = v; break;
+        case 2: TIM2->CCR2 = v; break;
+        case 3: TIM2->CCR3 = v; break;
+        case 4: TIM2->CCR4 = v; break;
     }
     return mp_const_none;
 }
@@ -171,8 +175,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_servo_set_obj, pyb_servo_set);
 STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
     int pe = mp_obj_get_int(period);
     int pu = mp_obj_get_int(pulse);
-    TIM5->ARR = pe;
-    TIM5->CCR3 = pu;
+    TIM2->ARR = pe;
+    TIM2->CCR3 = pu;
     return mp_const_none;
 }
 
