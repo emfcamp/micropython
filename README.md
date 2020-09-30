@@ -18,7 +18,7 @@ This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
 You can find the official website at [micropython.org](http://www.micropython.org).
 
-WARNING: this project is in beta stage and is subject to changes of the
+WARNING: this project is in beta stage and is subject to changes in the
 code-base, including project-wide name changes and API changes.
 
 MicroPython implements the entire Python 3.4 syntax (including exceptions,
@@ -33,13 +33,10 @@ See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
 
 Major components in this repository:
-- py/ -- the core Python implementation, including compiler, runtime, and
-  core library.
+- py/ -- the core Python implementation, including compiler, runtime, and core library.
 - unix/ -- a version of MicroPython that runs on Unix.
-- stmhal/ -- a version of MicroPython that runs on the MicroPython board
-  with an STM32F405RG (using ST's Cube HAL drivers).
-- minimal/ -- a minimal MicroPython port. Start with this if you want
-  to port MicroPython to another microcontroller.
+- stmhal/ -- a version of MicroPython that runs on the MicroPython board with an STM32F405RG (using ST's Cube HAL drivers).
+- minimal/ -- a minimal MicroPython port. Start with this if you want to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format.
 
